@@ -13,13 +13,7 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/src
-)
-
 file(GLOB_RECURSE SOURCE
-    ${CMAKE_SOURCE_DIR}/src/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )
 
@@ -27,5 +21,5 @@ add_definitions(-DTEST)
 
 # Now simply link against gtest or gtest_main as needed. Eg
 add_executable(${PROJECT_NAME} ${SOURCE})
-target_link_libraries(${PROJECT_NAME} gtest_main gtest gmock)
+target_link_libraries(${PROJECT_NAME} gtest_main gtest gmock spdlog::spdlog spdlogc)
 add_test(NAME all_test COMMAND ${PROJECT_NAME})
