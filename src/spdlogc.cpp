@@ -33,123 +33,165 @@ SPDLOGC_API void spdlogc_set_allocator(spdlogc_allocator_t allocator,
     __deleter = deleter;
 }
 
-std::shared_ptr<spdlog::logger> __GetLogger(const char *logger_name) {
-    std::shared_ptr<spdlog::logger> logger = spdlog::get(logger_name);
-
-    if (!logger) {
-        logger = std::make_shared<spdlog::logger>(logger_name);
-        spdlog::register_logger(logger);
-    }
-
-    return logger;
+SPDLOGC_API void spdlogc_init_thread_pool(size_t queue_size, size_t n_threads) {
+    spdlog::init_thread_pool(queue_size, n_threads);
 }
 
-SPDLOGC_API void spdlogc_set_pattern(const char *pattern) {
+SPDLOGC_API void spdlogc_create_sync_logger(const char *logger_name) {
+    IF_NULL_RETURN(logger_name);
+    auto logger = spdlog::get(logger_name);
+    if (logger) {
+        spdlog::drop(logger_name);
+    }
+    logger = std::make_shared<spdlog::logger>(logger_name);
+    spdlog::register_logger(logger);
+}
+
+SPDLOGC_API void spdlogc_create_async_logger(const char *logger_name) {
+    IF_NULL_RETURN(logger_name);
+    auto logger = spdlog::get(logger_name);
+    if (logger) {
+        spdlog::drop(logger_name);
+    }
+    std::vector<spdlog::sink_ptr> sinks;
+    logger = std::make_shared<spdlog::async_logger>(
+        logger_name, sinks.begin(), sinks.end(), spdlog::thread_pool(),
+        spdlog::async_overflow_policy::block);
+    spdlog::register_logger(logger);
+}
+
+SPDLOGC_API void spdlogc_set_pattern(const char *logger_name, const char *pattern) {
+    IF_NULL_RETURN(logger_name);
     IF_NULL_RETURN(pattern);
-    spdlog::set_pattern(pattern);
+    if (auto logger = spdlog::get(logger_name)) {
+    logger->set_pattern(pattern);
+    }
 }
 
 SPDLOGC_API void spdlogc_set_level(const char *logger_name, int level) {
     IF_NULL_RETURN(logger_name);
-    __GetLogger(logger_name)
-        ->set_level(static_cast<spdlog::level::level_enum>(level));
+    if (auto logger = spdlog::get(logger_name)) {
+        logger->set_level(static_cast<spdlog::level::level_enum>(level));
+    }
 }
 
 SPDLOGC_API void spdlogc_append_stdout_sink_to_logger(const char *logger_name) {
     IF_NULL_RETURN(logger_name);
-    __GetLogger(logger_name)
-        ->sinks()
-        .push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
+    if (auto logger = spdlog::get(logger_name)) {
+        logger->sinks().push_back(
+            std::make_shared<spdlog::sinks::stdout_sink_mt>());
+    }
 }
 
 SPDLOGC_API void spdlogc_append_basic_file_sink_to_logger(
     const char *logger_name, const char *filename, SPDLOGC_BOOL truncate) {
     IF_NULL_RETURN(logger_name);
     IF_NULL_RETURN(filename);
-    __GetLogger(logger_name)
-        ->sinks()
-        .push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-            filename, __ToBool(truncate)));
+    if (auto logger = spdlog::get(logger_name)) {
+        logger->sinks().push_back(
+            std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+                filename, __ToBool(truncate)));
+    }
 }
 
 SPDLOGC_API void spdlogc_log_trace(const char *logger_name, const char *fmt,
                                    ...) {
-    va_list args;
-    va_start(args, fmt);
-    SPDLOG_LOGGER_TRACE(__GetLogger(logger_name), fmt, args);
+    IF_NULL_RETURN(logger_name);
+    IF_NULL_RETURN(fmt);
+    if (auto logger = spdlog::get(logger_name)) {
+        char *buf = static_cast<char *>(__allocator(__buf_size));
+        IF_NULL_RETURN(buf);
+        memset(buf, __buf_size, 0x00);
+        va_list args;
+        va_start(args, fmt);
+        vsnprintf(buf, __buf_size, fmt, args);
+        va_end(args);
+        logger->trace(buf);
+        __deleter(buf);
+    }
 }
 
 SPDLOGC_API void spdlogc_log_debug(const char *logger_name, const char *fmt,
                                    ...) {
     IF_NULL_RETURN(logger_name);
     IF_NULL_RETURN(fmt);
-    char *buf = static_cast<char *>(__allocator(__buf_size));
-    IF_NULL_RETURN(buf);
-    memset(buf, __buf_size, 0x00);
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buf, __buf_size, fmt, args);
-    va_end(args);
-    __GetLogger(logger_name)->debug(buf);
-    __deleter(buf);
+    if (auto logger = spdlog::get(logger_name)) {
+        char *buf = static_cast<char *>(__allocator(__buf_size));
+        IF_NULL_RETURN(buf);
+        memset(buf, __buf_size, 0x00);
+        va_list args;
+        va_start(args, fmt);
+        vsnprintf(buf, __buf_size, fmt, args);
+        va_end(args);
+        logger->debug(buf);
+        __deleter(buf);
+    }
 }
 
 SPDLOGC_API void spdlogc_log_info(const char *logger_name, const char *fmt,
                                   ...) {
     IF_NULL_RETURN(logger_name);
     IF_NULL_RETURN(fmt);
-    char *buf = static_cast<char *>(__allocator(__buf_size));
-    IF_NULL_RETURN(buf);
-    memset(buf, __buf_size, 0x00);
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buf, __buf_size, fmt, args);
-    va_end(args);
-    __GetLogger(logger_name)->info(buf);
-    __deleter(buf);
+    if (auto logger = spdlog::get(logger_name)) {
+        char *buf = static_cast<char *>(__allocator(__buf_size));
+        IF_NULL_RETURN(buf);
+        memset(buf, __buf_size, 0x00);
+        va_list args;
+        va_start(args, fmt);
+        vsnprintf(buf, __buf_size, fmt, args);
+        va_end(args);
+        logger->info(buf);
+        __deleter(buf);
+    }
 }
 
 SPDLOGC_API void spdlogc_log_warn(const char *logger_name, const char *fmt,
                                   ...) {
     IF_NULL_RETURN(logger_name);
     IF_NULL_RETURN(fmt);
-    char *buf = static_cast<char *>(__allocator(__buf_size));
-    IF_NULL_RETURN(buf);
-    memset(buf, __buf_size, 0x00);
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buf, __buf_size, fmt, args);
-    va_end(args);
-    __GetLogger(logger_name)->warn(buf);
-    __deleter(buf);
+    if (auto logger = spdlog::get(logger_name)) {
+        char *buf = static_cast<char *>(__allocator(__buf_size));
+        IF_NULL_RETURN(buf);
+        memset(buf, __buf_size, 0x00);
+        va_list args;
+        va_start(args, fmt);
+        vsnprintf(buf, __buf_size, fmt, args);
+        va_end(args);
+        logger->warn(buf);
+        __deleter(buf);
+    }
 }
 
 SPDLOGC_API void spdlogc_log_error(const char *logger_name, const char *fmt,
                                    ...) {
     IF_NULL_RETURN(logger_name);
     IF_NULL_RETURN(fmt);
-    char *buf = static_cast<char *>(__allocator(__buf_size));
-    IF_NULL_RETURN(buf);
-    memset(buf, __buf_size, 0x00);
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buf, __buf_size, fmt, args);
-    va_end(args);
-    __GetLogger(logger_name)->error(buf);
-    __deleter(buf);
+    if (auto logger = spdlog::get(logger_name)) {
+        char *buf = static_cast<char *>(__allocator(__buf_size));
+        IF_NULL_RETURN(buf);
+        memset(buf, __buf_size, 0x00);
+        va_list args;
+        va_start(args, fmt);
+        vsnprintf(buf, __buf_size, fmt, args);
+        va_end(args);
+        logger->error(buf);
+        __deleter(buf);
+    }
 }
 
 SPDLOGC_API void spdlogc_log_critical(const char *logger_name, const char *fmt,
                                       ...) {
     IF_NULL_RETURN(logger_name);
     IF_NULL_RETURN(fmt);
-    char *buf = static_cast<char *>(__allocator(__buf_size));
-    IF_NULL_RETURN(buf);
-    memset(buf, __buf_size, 0x00);
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buf, __buf_size, fmt, args);
-    va_end(args);
-    __GetLogger(logger_name)->critical(buf);
-    __deleter(buf);
+    if (auto logger = spdlog::get(logger_name)) {
+        char *buf = static_cast<char *>(__allocator(__buf_size));
+        IF_NULL_RETURN(buf);
+        memset(buf, __buf_size, 0x00);
+        va_list args;
+        va_start(args, fmt);
+        vsnprintf(buf, __buf_size, fmt, args);
+        va_end(args);
+        logger->critical(buf);
+        __deleter(buf);
+    }
 }

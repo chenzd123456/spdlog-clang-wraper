@@ -10,12 +10,18 @@ typedef void (*spdlogc_deleter_t)(void *);
 
 enum SPDLOGC_BOOL : uint8_t { SPDLOGC_FALSE = 0, SPDLOGC_TRUE };
 
-SPDLOGC_API void spdlogc_set_pattern(const char *pattern);
+SPDLOGC_API void spdlogc_init_thread_pool(size_t queue_size, size_t n_threads);
+
+SPDLOGC_API void spdlogc_set_pattern(const char *logger_name, const char *pattern);
 
 SPDLOGC_API void spdlogc_set_level(const char *logger_name, int level);
 
 SPDLOGC_API void spdlogc_set_allocator(spdlogc_allocator_t allocator,
                                        spdlogc_deleter_t deleter);
+
+SPDLOGC_API void spdlogc_create_sync_logger(const char *logger_name);
+
+SPDLOGC_API void spdlogc_create_async_logger(const char *logger_name);
 
 SPDLOGC_API void spdlogc_append_stdout_sink_to_logger(const char *logger_name);
 
