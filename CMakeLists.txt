@@ -26,6 +26,9 @@ file(GLOB_RECURSE SOURCE
     ${CMAKE_SOURCE_DIR}/src/*.cpp
 )
 
+set(CMAKE_C_FLAGS "-O3")
+set(CMAKE_CXX_FLAGS "-O3")
+
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
 target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 
