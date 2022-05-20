@@ -19,7 +19,7 @@ include_directories(
 
 file(GLOB_RECURSE SOURCE
   ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-  ${CMAKE_SOURCE_DIR}/src/*.cpp
+  # ${CMAKE_SOURCE_DIR}/src/*.cpp
 )
 
 set(CMAKE_C_FLAGS "-g -O0")
@@ -29,5 +29,5 @@ set(CMAKE_CXX_FLAGS "-g -O0")
 
 # Now simply link against gtest or gtest_main as needed. Eg
 add_executable(${PROJECT_NAME} ${SOURCE})
-target_link_libraries(${PROJECT_NAME} gtest_main gtest gmock spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} gtest_main gtest gmock spdlogc)
 add_test(NAME all_test COMMAND ${PROJECT_NAME})
