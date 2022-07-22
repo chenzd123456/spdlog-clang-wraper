@@ -1,10 +1,13 @@
 #include "spdlogc/spdlogc.h"
 
 #include <memory>
+#include <unordered_map>
+
 #include <stdarg.h>
 
 #include <spdlog/async.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_sinks.h>
 #include <spdlog/spdlog.h>
 
@@ -22,6 +25,7 @@ void __default_deleter(void *ptr) { free(ptr); }
 static size_t __buf_size = SPDLOGC_BUF_SIZE;
 static spdlogc_allocator_t __allocator = &__default_allocator;
 static spdlogc_deleter_t __deleter = &__default_deleter;
+static std::unordered_map<std::string, spdlog::sink_ptr> sinks_map;
 
 bool __ToBool(SPDLOGC_BOOL bool_) { return bool_ == SPDLOGC_TRUE; }
 
@@ -60,39 +64,76 @@ SPDLOGC_API void spdlogc_create_async_logger(const char *logger_name) {
     spdlog::register_logger(logger);
 }
 
-SPDLOGC_API void spdlogc_set_pattern(const char *logger_name,
-                                     const char *pattern) {
-    IF_NULL_RETURN(logger_name);
+SPDLOGC_API void spdlogc_set_sink_pattern(const char *sink_name,
+                                          const char *pattern) {
+    IF_NULL_RETURN(sink_name);
     IF_NULL_RETURN(pattern);
-    if (auto logger = spdlog::get(logger_name)) {
-        logger->set_pattern(pattern);
+    auto sink_it = sinks_map.find(sink_name);
+    if (sink_it != sinks_map.end()) {
+        sink_it->second->set_pattern(pattern);
     }
 }
 
-SPDLOGC_API void spdlogc_set_level(const char *logger_name,
-                                   SPDLOGC_LEVEL level) {
+SPDLOGC_API void spdlogc_set_logger_level(const char *logger_name,
+                                          SPDLOGC_LEVEL level) {
     IF_NULL_RETURN(logger_name);
     if (auto logger = spdlog::get(logger_name)) {
         logger->set_level(static_cast<spdlog::level::level_enum>(level));
     }
 }
 
-SPDLOGC_API void spdlogc_append_stdout_sink_to_logger(const char *logger_name) {
+SPDLOGC_API void spdlogc_create_basic_file_sink(const char *sink_name,
+                                                const char *filename,
+                                                SPDLOGC_BOOL truncate) {
+    IF_NULL_RETURN(sink_name);
+    IF_NULL_RETURN(filename);
+    sinks_map[sink_name] = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+        filename, __ToBool(truncate));
+}
+
+SPDLOGC_API void
+spdlogc_create_rotating_file_sink(const char *sink_name, const char *filename,
+                                  std::size_t max_size, std::size_t max_files,
+                                  SPDLOGC_BOOL rotate_on_open) {
+    IF_NULL_RETURN(sink_name);
+    IF_NULL_RETURN(filename);
+    sinks_map[sink_name] =
+        std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+            filename, max_size, max_files, __ToBool(rotate_on_open));
+}
+
+SPDLOGC_API void spdlogc_create_stdout_sink(const char *sink_name) {
+    IF_NULL_RETURN(sink_name);
+    sinks_map[sink_name] = std::make_shared<spdlog::sinks::stdout_sink_mt>();
+}
+
+SPDLOGC_API void spdlogc_append_sink_to_logger(const char *logger_name,
+                                               const char *sink_name) {
     IF_NULL_RETURN(logger_name);
-    if (auto logger = spdlog::get(logger_name)) {
-        logger->sinks().push_back(
-            std::make_shared<spdlog::sinks::stdout_sink_mt>());
+    IF_NULL_RETURN(sink_name);
+    auto sink_it = sinks_map.find(sink_name);
+    if (sink_it != sinks_map.end()) {
+        if (auto logger = spdlog::get(logger_name)) {
+            logger->sinks().push_back(sink_it->second);
+        }
     }
 }
 
-SPDLOGC_API void spdlogc_append_basic_file_sink_to_logger(
-    const char *logger_name, const char *filename, SPDLOGC_BOOL truncate) {
+SPDLOGC_API void spdlogc_remove_sink_from_logger(const char *logger_name,
+                                                 const char *sink_name) {
     IF_NULL_RETURN(logger_name);
-    IF_NULL_RETURN(filename);
-    if (auto logger = spdlog::get(logger_name)) {
-        logger->sinks().push_back(
-            std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-                filename, __ToBool(truncate)));
+    IF_NULL_RETURN(sink_name);
+    auto sink_it = sinks_map.find(sink_name);
+    if (sink_it != sinks_map.end()) {
+        if (auto logger = spdlog::get(logger_name)) {
+            auto &sinks = logger->sinks();
+            for (auto it = sinks.begin(); it != sinks.end(); it++) {
+                if (*it == sink_it->second) {
+                    sinks.erase(it);
+                    break;
+                }
+            }
+        }
     }
 }
 
