@@ -1,6 +1,5 @@
 #include "common.h"
 
-#if 1
 #include <spdlogc/spdlogc.h>
 
 TEST(spdlogc_test, spdlogc_append_stdout_sink_to_logger) {
@@ -31,14 +30,13 @@ TEST(spdlogc_test, spdlogc_append_stdout_sink_to_logger) {
     SPDLOGC_TRACE(logger1, "hello world1 %s %d", "eco", 10);
     SPDLOGC_DEBUG(logger1, "hello world2 %s %d", "eco", 10);
     SPDLOGC_INFO(logger1, "hello world3 %s %d", "eco", 10);
-    SPDLOGC_WARNNING(logger1, "hello world4 %s %d", "eco", 10);
+    SPDLOGC_WARN(logger1, "hello world4 %s %d", "eco", 10);
     SPDLOGC_ERROR(logger1, "hello world5 %s %d", "eco", 10);
     SPDLOGC_CRITICAL(logger1, "hello world6 %s %d", "eco", 10);
     SPDLOGC_TRACE(logger2, "hello world1 %s %d", "eco", 10);
     SPDLOGC_DEBUG(logger2, "hello world2 %s %d", "eco", 10);
     SPDLOGC_INFO(logger2, "hello world3 %s %d", "eco", 10);
-    SPDLOGC_WARNNING(logger2, "hello world4 %s %d", "eco", 10);
+    SPDLOGC_WARN(logger2, "hello world4 %s %d", "eco", 10);
     SPDLOGC_ERROR(logger2, "hello world5 %s %d", "eco", 10);
     SPDLOGC_CRITICAL(logger2, "hello world6 %s %d", "eco", 10);
 }
-#endif

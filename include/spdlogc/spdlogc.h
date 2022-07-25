@@ -9,17 +9,17 @@ typedef void *(*spdlogc_allocator_t)(size_t);
 typedef void (*spdlogc_deleter_t)(void *);
 
 #define SPDLOGC_TRACE(logger_name, fmt_, ...)                                  \
-    spdlogc_log(SPDLOGC_LEVEL_TRACE, logger_name, fmt_, __VA_ARGS__)
+    spdlogc_log(SPDLOGC_LEVEL_TRACE, logger_name, fmt_, ##__VA_ARGS__)
 #define SPDLOGC_DEBUG(logger_name, fmt_, ...)                                  \
-    spdlogc_log(SPDLOGC_LEVEL_DEBUG, logger_name, fmt_, __VA_ARGS__)
+    spdlogc_log(SPDLOGC_LEVEL_DEBUG, logger_name, fmt_, ##__VA_ARGS__)
 #define SPDLOGC_INFO(logger_name, fmt_, ...)                                   \
-    spdlogc_log(SPDLOGC_LEVEL_INFO, logger_name, fmt_, __VA_ARGS__)
-#define SPDLOGC_WARNNING(logger_name, fmt_, ...)                               \
-    spdlogc_log(SPDLOGC_LEVEL_WARN, logger_name, fmt_, __VA_ARGS__)
+    spdlogc_log(SPDLOGC_LEVEL_INFO, logger_name, fmt_, ##__VA_ARGS__)
+#define SPDLOGC_WARN(logger_name, fmt_, ...)                                   \
+    spdlogc_log(SPDLOGC_LEVEL_WARN, logger_name, fmt_, ##__VA_ARGS__)
 #define SPDLOGC_ERROR(logger_name, fmt_, ...)                                  \
-    spdlogc_log(SPDLOGC_LEVEL_ERROR, logger_name, fmt_, __VA_ARGS__)
+    spdlogc_log(SPDLOGC_LEVEL_ERROR, logger_name, fmt_, ##__VA_ARGS__)
 #define SPDLOGC_CRITICAL(logger_name, fmt_, ...)                               \
-    spdlogc_log(SPDLOGC_LEVEL_CRITICAL, logger_name, fmt_, __VA_ARGS__)
+    spdlogc_log(SPDLOGC_LEVEL_CRITICAL, logger_name, fmt_, ##__VA_ARGS__)
 
 enum SPDLOGC_LEVEL : int {
     SPDLOGC_LEVEL_TRACE = SPDLOG_LEVEL_TRACE,
