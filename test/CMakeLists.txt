@@ -3,18 +3,8 @@ project(test CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
-)
-
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
 include_directories(
-  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 file(GLOB_RECURSE SOURCE
@@ -24,8 +14,6 @@ file(GLOB_RECURSE SOURCE
 
 set(CMAKE_C_FLAGS "-g -O0")
 set(CMAKE_CXX_FLAGS "-g -O0")
-# set(CMAKE_C_FLAGS "-O3")
-# set(CMAKE_CXX_FLAGS "-O3")
 
 # Now simply link against gtest or gtest_main as needed. Eg
 add_executable(${PROJECT_NAME} ${SOURCE})

@@ -5,15 +5,6 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
 
 project(spdlogc)
 
-include(FetchContent)
-FetchContent_Declare(
-  spdlog
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG        v1.10.0
-)
-
-FetchContent_MakeAvailable(spdlog)
-
 install(DIRECTORY include/${PROJECT_NAME}
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
 
@@ -32,4 +23,5 @@ set(CMAKE_CXX_FLAGS "-O3")
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
 target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 
+add_subdirectory(3rd)
 add_subdirectory(test)
